@@ -33,7 +33,7 @@ class LeftLabelView : View {
                 0
         )
         val n = a.indexCount
-        for (i in 0..n) {
+        for (i in 0 until n) {
             when (val attr = a.getIndex(i)) {
                 R.styleable.LeftLabelView_timeLabelSize -> labelSize = a.getDimensionPixelSize(
                         attr, TypedValue.applyDimension(
@@ -44,18 +44,23 @@ class LeftLabelView : View {
                         a.getColor(attr, Color.BLACK)
             }
         }
+        a.recycle()
     }
 
     private val mLabelPaint = Paint()
-    var labelColor = 0
-    var labelSize = 0
+    var labelColor = Color.BLACK
+    var labelSize = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP,
+            11f,
+            resources.displayMetrics
+    ).toInt()
     private val startDate = TimeInDay(8, 0)
     private val temp = TimeInDay(8, 0)
     var sectionHeight = 180
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        mLabelPaint.color = Color.BLACK
+        mLabelPaint.color = labelColor
         mLabelPaint.textSize = labelSize.toFloat()
         mLabelPaint.textAlign = Paint.Align.LEFT
         for (i in startDate.hour..23) {

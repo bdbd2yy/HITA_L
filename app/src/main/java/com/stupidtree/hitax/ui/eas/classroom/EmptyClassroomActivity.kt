@@ -42,6 +42,9 @@ class EmptyClassroomActivity :
                         }
                     }
                     viewModel.selectedTermLiveData.value = data.data?.get(0)
+                } else {
+                    binding.refresh.isRefreshing = false
+                    binding.termText.setText(R.string.navi_semister_no_data)
                 }
             } else {
                 binding.refresh.isRefreshing = false
@@ -59,7 +62,7 @@ class EmptyClassroomActivity :
             }
         }
         viewModel.selectedBuildingLiveData.observe(this) {
-            binding.refresh.isRefreshing = true
+            binding.refresh.isRefreshing = viewModel.selectedTermLiveData.value != null
             binding.buildingText.text = it.name
         }
         viewModel.selectedTermLiveData.observe(this) {

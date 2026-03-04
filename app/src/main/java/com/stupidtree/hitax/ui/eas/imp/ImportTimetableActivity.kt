@@ -124,6 +124,10 @@ class ImportTimetableActivity :
                         }
                     }
                     viewModel.changeSelectedTerm(data.data!![0])
+                } else {
+                    binding.termText.setText(R.string.navi_semister_no_data)
+                    binding.cardName.setTitle(R.string.navi_semister_no_data)
+                    AnimationUtils.enableLoadingButton(binding.buttonImport, false)
                 }
             } else {
                 binding.termText.setText(R.string.load_failed)

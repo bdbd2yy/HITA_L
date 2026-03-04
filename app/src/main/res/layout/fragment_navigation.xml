@@ -85,16 +85,32 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/nickname"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center|start"
-                        android:maxEms="20"
-                        android:singleLine="true"
-                        android:textColor="?attr/textColorPrimary"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/nickname"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center|start"
+                            android:maxEms="20"
+                            android:singleLine="true"
+                            android:textColor="?attr/textColorPrimary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:id="@+id/user_status_dot"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/indicator_green_glow"
+                            android:visibility="gone" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/username"
@@ -112,10 +128,13 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:id="@+id/user_action_icon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:layout_gravity="center"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="14dp"
+                    android:padding="4dp"
                     android:tintMode="src_in"
                     app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                     app:tint="?attr/colorPrimaryDisabled" />
@@ -323,66 +342,6 @@
                 android:layout_height="match_parent"
                 android:layout_marginBottom="8dp"
                 android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/eas_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:foreground="?attr/selectableItemBackgroundBorderless"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="0dp"
-                    android:paddingBottom="4dp">
-
-                    <ImageView
-                        android:id="@+id/eas_dot"
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="2dp"
-                        android:foregroundTintMode="src_over"
-                        android:tintMode="src_in"
-                        app:srcCompat="@drawable/element_round_double" />
-
-                    <ImageView
-                        android:id="@+id/eas_avatar"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_gravity="center"
-                        android:visibility="gone"
-                        app:srcCompat="@drawable/anonymous" />
-
-                    <com.stupidtree.hitax.ui.widgets.FocusTextView
-                        android:id="@+id/eas_title"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:singleLine="true"
-                        android:text="@string/import_timetable"
-                        android:textColor="?attr/textColorSecondary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/eas_action_icon"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_gravity="center"
-                        android:layout_marginEnd="8dp"
-                        android:clickable="true"
-                        android:foreground="?attr/selectableItemBackgroundBorderless"
-                        android:padding="8dp"
-                        android:theme="@style/button_ripple_accent_little"
-                        android:tintMode="src_in"
-                        app:srcCompat="@drawable/ic_baseline_exit_to_app_24"
-                        app:tint="?attr/colorPrimaryDisabled" />
-
-                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -659,7 +618,7 @@
             android:textColor="?attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:visibility="visible" />
+            android:visibility="gone" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -669,6 +628,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
             android:focusable="true"
+            android:visibility="gone"
             app:cardBackgroundColor="?attr/backgroundColorSecond"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">

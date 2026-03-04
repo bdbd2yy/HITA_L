@@ -3,6 +3,7 @@ package com.stupidtree.hitax.ui.eas.score
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.stupidtree.component.data.DataState
 import com.stupidtree.component.data.MTransformations
@@ -11,6 +12,7 @@ import com.stupidtree.hitax.data.model.eas.CourseScoreItem
 import com.stupidtree.hitax.data.model.eas.TermItem
 import com.stupidtree.hitax.data.repository.EASRepository
 import com.stupidtree.hitax.data.source.web.service.EASService
+import com.stupidtree.hitax.ui.eas.EASTermFilter
 import com.stupidtree.hitax.ui.eas.EASViewModel
 
 class ScoreInquiryViewModel(application: Application) : EASViewModel(application) {
@@ -25,8 +27,10 @@ class ScoreInquiryViewModel(application: Application) : EASViewModel(application
     private val pageController = MutableLiveData<Trigger>()
 
     val termsLiveData : LiveData<DataState<List<TermItem>>> = pageController.switchMap {
-            return@switchMap easRepository.getAllTerms()
+        return@switchMap easRepository.getAllTerms().map { state ->
+            EASTermFilter.filterFromTargetAutumn(state)
         }
+    }
 
     val selectedTermLiveData: MutableLiveData<TermItem> = MutableLiveData()
     val selectedTestTypeLiveData: MutableLiveData<EASService.TestType> = MutableLiveData()

@@ -9,8 +9,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.stupidtree.hita.theta.ui.list.ArticleListFragment
-import com.stupidtree.hita.theta.ui.user.UserListFragment
 import com.stupidtree.hitax.R
 import com.stupidtree.hitax.databinding.ActivitySearchBinding
 import com.stupidtree.style.base.BaseActivity
@@ -55,10 +53,9 @@ class SearchActivity : BaseActivity<SearchViewModel, ActivitySearchBinding>(),
         if (text.isNullOrEmpty() || purpose.isNullOrEmpty()) return
         var index = 0
         when (purpose) {
-//            "timetable" -> index = 0
             ActivityUtils.SearchType.TEACHER.name -> index = 0
-            ActivityUtils.SearchType.USER.name -> index = 1
-            ActivityUtils.SearchType.ARTICLE.name -> index = 2
+            ActivityUtils.SearchType.USER.name -> index = 0
+            ActivityUtils.SearchType.ARTICLE.name -> index = 0
 //            "user" -> index = 2
 //            "location" -> index = 3
 //            "library" -> index = 4
@@ -109,12 +106,9 @@ class SearchActivity : BaseActivity<SearchViewModel, ActivitySearchBinding>(),
         }
     }
 
-    class SearchPagerAdapter(fm: FragmentManager, val context: Context) : BaseTabAdapter(fm, 3) {
+    class SearchPagerAdapter(fm: FragmentManager, val context: Context) : BaseTabAdapter(fm, 1) {
         private var titles: IntArray = intArrayOf(
-            //R.string.tab_search_timetable,
-            R.string.tab_search_teacher,
-            R.string.tab_search_user,
-            R.string.tab_search_article
+            R.string.tab_search_teacher
 //            R.string.tab_search_location,
 //            R.string.tab_search_library,
 //            R.string.tab_hitsz_website_info,
@@ -132,11 +126,7 @@ class SearchActivity : BaseActivity<SearchViewModel, ActivitySearchBinding>(),
         }
 
         override fun initItem(position: Int): Fragment {
-            return when (position) {
-                0 -> FragmentSearchTeacher()
-                1 -> UserListFragment.newInstance("search", "")
-                else -> ArticleListFragment.newInstance("search", "")
-            }
+            return FragmentSearchTeacher()
         }
 
     }

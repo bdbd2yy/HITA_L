@@ -8,6 +8,7 @@ import com.stupidtree.hitax.data.repository.EASRepository
 import com.stupidtree.component.data.DataState
 import com.stupidtree.component.data.Trigger
 import com.stupidtree.hitax.ui.eas.EASViewModel
+import com.stupidtree.hitax.ui.eas.EASTermFilter
 import com.stupidtree.component.data.MTransformations
 import java.util.*
 
@@ -23,9 +24,11 @@ class ImportTimetableViewModel(application: Application) : EASViewModel(applicat
 
     private val termsController = MutableLiveData<Trigger>()
 
-    val termsLiveData: LiveData<DataState<List<TermItem>>> = termsController.switchMap{
-            return@switchMap easRepository.getAllTerms()
+    val termsLiveData: LiveData<DataState<List<TermItem>>> = termsController.switchMap {
+        return@switchMap easRepository.getAllTerms().map { state ->
+            EASTermFilter.filterFromTargetAutumn(state)
         }
+    }
 
     val selectedTermLiveData: MutableLiveData<TermItem?> = MutableLiveData()
 

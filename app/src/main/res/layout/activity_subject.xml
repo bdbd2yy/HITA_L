@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="180dp"
             android:minHeight="56dp"
+            app:contentScrim="?attr/backgroundColorBottom"
             app:collapsedTitleGravity="left|center"
             app:expandedTitleGravity="left|bottom|center"
             app:expandedTitleMargin="24dp"

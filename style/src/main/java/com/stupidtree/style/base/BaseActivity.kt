@@ -81,9 +81,11 @@ abstract class BaseActivity<T : ViewModel, V : ViewBinding> : AppCompatActivity(
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         }
         /* if (AppCompatDelegate.getDefaultNightMode()!=AppCompatDelegate.MODE_NIGHT_YES&&Build.VERSION.SDK_INT >= Build.VERSION_CODES.M&&darkColor)getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR); */
-        if (statusBar) window.addFlags(
-            WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-        )
+        if (statusBar) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = getBackgroundColorBottom()
+        }
         if (navi) window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
     }
 

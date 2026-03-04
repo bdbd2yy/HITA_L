@@ -251,12 +251,16 @@
             android:alpha="0.8"
             android:background="?android:attr/listDivider" />
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/drawer_navigationview"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom|center|start"
-            android:layout_weight="1"
             android:background="#00000000"
             android:overScrollMode="never"
             app:elevation="0dp"
@@ -271,13 +275,10 @@
 
         </com.google.android.material.navigation.NavigationView>
 
-        <LinearLayout
+        <Space
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:orientation="horizontal">
-
-        </LinearLayout>
+            android:layout_height="24dp"
+            android:layout_gravity="bottom|center" />
     </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

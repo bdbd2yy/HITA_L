@@ -16,6 +16,7 @@
             android:id="@+id/collapse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:contentScrim="?attr/backgroundColorBottom"
             app:layout_scrollFlags="scroll|enterAlways"
             app:toolbarId="@+id/toolbar">
 

@@ -8,6 +8,7 @@ import com.stupidtree.hitax.data.repository.EASRepository
 import com.stupidtree.hitax.data.repository.TimetableRepository
 import com.stupidtree.component.data.DataState
 import com.stupidtree.component.data.Trigger
+import com.stupidtree.hitax.ui.eas.EASTermFilter
 import com.stupidtree.hitax.ui.eas.EASViewModel
 import com.stupidtree.component.data.MTransformations
 
@@ -20,9 +21,11 @@ class EmptyClassroomViewModel(application: Application) : EASViewModel(applicati
 
 
     private val pageController = MutableLiveData<Trigger>()
-    val termsLiveData: LiveData<DataState<List<TermItem>>> =pageController.switchMap {
-            return@switchMap easRepository.getAllTerms()
+    val termsLiveData: LiveData<DataState<List<TermItem>>> = pageController.switchMap {
+        return@switchMap easRepository.getAllTerms().map { state ->
+            EASTermFilter.filterFromTargetAutumn(state)
         }
+    }
     val buildingsLiveData: LiveData<DataState<List<BuildingItem>>> = pageController.switchMap {
             return@switchMap easRepository.getTeachingBuildings()
         }

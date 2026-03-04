@@ -7,15 +7,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.stupidtree.component.data.DataState
 import com.stupidtree.component.web.BaseWebSource
-import com.stupidtree.hitax.data.source.web.service.UserService
 import com.stupidtree.stupiduser.R
 import com.stupidtree.stupiduser.data.model.*
 import com.stupidtree.stupiduser.data.source.web.service.ManagerService
 import com.stupidtree.stupiduser.data.source.web.service.codes
 import com.stupidtree.stupiduser.data.source.web.service.codes.SUCCESS
-import com.stupidtree.stupiduser.data.source.web.service.codes.USER_ALREADY_EXISTS
-import com.stupidtree.stupiduser.data.source.web.service.codes.WRONG_PASSWORD
-import com.stupidtree.stupiduser.data.source.web.service.codes.WRONG_USERNAME
 import com.stupidtree.stupiduser.util.HttpUtils
 
 /**

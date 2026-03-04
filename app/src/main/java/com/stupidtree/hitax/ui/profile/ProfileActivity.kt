@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.Toast
 import com.google.android.material.appbar.AppBarLayout
 import com.stupidtree.component.data.DataState
-import com.stupidtree.hita.theta.utils.ActivityTools
 import com.stupidtree.hitax.R
 import com.stupidtree.hitax.data.repository.TimetableRepository
 import com.stupidtree.hitax.databinding.ActivityProfileBinding
@@ -65,36 +64,9 @@ class ProfileActivity : BaseActivity<ProfileViewModel, ActivityProfileBinding>()
                 }
             ).show(supportFragmentManager, "logout")
         }
-        binding.followingLayout.setOnClickListener {
-            viewModel.userProfileLiveData.value?.data?.let {
-                ActivityTools.startUserListActivity(
-                    getThis(),
-                    getString(R.string.users_following, it.nickname),
-                    "following",
-                    it.id
-                )
-            }
-        }
-        binding.fansLayout.setOnClickListener {
-            viewModel.userProfileLiveData.value?.data?.let {
-                ActivityTools.startUserListActivity(
-                    getThis(),
-                    getString(R.string.users_fans, it.nickname),
-                    "fans",
-                    it.id
-                )
-            }
-        }
-        binding.postsLayout.setOnClickListener {
-            viewModel.userProfileLiveData.value?.data?.let {
-                ActivityTools.startArticleListActivity(
-                    getThis(),
-                    getString(R.string.users_posts, it.nickname),
-                    "user",
-                    it.id
-                )
-            }
-        }
+        binding.followingLayout.visibility = View.GONE
+        binding.fansLayout.visibility = View.GONE
+        binding.postsLayout.visibility = View.GONE
 
         binding.fab.backgroundTintList = ColorStateList.valueOf(getColorPrimary())
     }

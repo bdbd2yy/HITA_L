@@ -1,11 +1,12 @@
 package com.stupidtree.hitax.ui.news
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.text.Html
 import android.webkit.*
-import com.stupidtree.hita.theta.utils.ActivityTools
 import com.stupidtree.hitax.databinding.ActivityNewsDetailBinding
 import com.stupidtree.style.base.BaseActivity
 
@@ -45,7 +46,9 @@ class NewsDetailActivity : BaseActivity<NewsViewModel, ActivityNewsDetailBinding
         binding.webview.addJavascriptInterface(object : JsCallJavaObj {
             @JavascriptInterface
             override fun showBigImg(url: String) {
-                ActivityTools.showMultipleImages(getThis(), listOf(url), 0, abs = true)
+                runCatching {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                }
             }
         }, "jsCallJavaObj")
         binding.webview.webViewClient = object : WebViewClient() {

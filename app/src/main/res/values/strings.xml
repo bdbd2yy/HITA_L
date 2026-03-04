@@ -94,7 +94,7 @@
     <string name="load_lecture_failed">加载讲座失败</string>
     <string name="load_annouce_failed">加载通知失败</string>
     <string name="punch_failed">打卡失败！</string>
-    <string name="maintab_navi">校园</string>
+    <string name="maintab_navi">服务</string>
     <string name="maintab_today">今日</string>
     <string name="maintab_events">事务</string>
     <string name="sign_up">注册</string>
@@ -107,7 +107,7 @@
     <string name="navi_jw_xl_p">校历</string>
     <string name="navi_hint_text">长按卡片可以拖动调整次序哦</string>
     <string name="navi_hint_button">知道啦</string>
-    <string name="navi_campus_title">校园生活</string>
+    <string name="navi_campus_title">更多服务</string>
     <string name="navi_campus_vote_p">态度墙</string>
     <string name="navi_campus_billboard_p">食堂排行</string>
     <string name="navi_mood_greet">Hi, 今天心情如何？</string>
@@ -712,6 +712,13 @@
     <string name="comment_added">已添加评论</string>
     <string name="not_log_in">未登录</string>
     <string name="log_in_first">请先登录</string>
+    <string name="account_feature_removed_title">账号功能已下线</string>
+    <string name="account_feature_removed_desc">已移除项目账号登录，仅保留教务认证相关功能</string>
+    <string name="jw_login_entry_title">教务功能登录</string>
+    <string name="jw_login_connected_title">统一身份认证已连接</string>
+    <string name="jw_login_entry_subtitle">点击进行统一身份认证登录</string>
+    <string name="jw_login_connected">已登录统一身份认证</string>
+    <string name="jw_login_status_with_student_id">教务登录为 %1$s</string>
     <string name="reply_to">回复给</string>
     <string name="set_topic">设置话题</string>
     <string name="more_topics">更多话题</string>

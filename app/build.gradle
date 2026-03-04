@@ -4,6 +4,14 @@ plugins {
     id 'kotlin-kapt'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { input ->
+        localProperties.load(input)
+    }
+}
+
 
 android {
 
@@ -39,9 +47,26 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            def storeFilePath = localProperties.getProperty('RELEASE_STORE_FILE')
+            def storePwd = localProperties.getProperty('RELEASE_STORE_PASSWORD')
+            def keyAliasValue = localProperties.getProperty('RELEASE_KEY_ALIAS')
+            def keyPwd = localProperties.getProperty('RELEASE_KEY_PASSWORD')
+
+            if (storeFilePath && storePwd && keyAliasValue && keyPwd) {
+                storeFile file(storeFilePath)
+                storePassword storePwd
+                keyAlias keyAliasValue
+                keyPassword keyPwd
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -76,7 +101,6 @@ dependencies {
     implementation project(path: ':user')
     implementation project(path: ':sync')
     implementation project(path: ':style')
-    implementation project(path: ':theta')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
@@ -118,8 +142,9 @@ dependencies {
 
     //jetpack compose
     implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     // Tooling support (Previews, etc.)
-    implementation "androidx.compose.ui:ui-tooling:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
     implementation "androidx.compose.foundation:foundation:$compose_version"
     // Material Design

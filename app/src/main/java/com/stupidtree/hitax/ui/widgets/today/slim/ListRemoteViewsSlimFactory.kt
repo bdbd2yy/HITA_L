@@ -6,11 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.graphics.Color
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.stupidtree.hitax.R
 import com.stupidtree.hitax.data.model.timetable.EventItem
 import com.stupidtree.hitax.data.repository.TimetableRepository
+import com.stupidtree.hitax.ui.widgets.today.TodayUtils
 import com.stupidtree.hitax.ui.widgets.today.slim.TodayWidgetSlim.Companion.EVENT_EXTRA2
 import com.stupidtree.hitax.utils.TimeTools
 
@@ -36,6 +38,25 @@ internal class ListRemoteViewsSlimFactory(val mContext: Context, intent: Intent)
         val result =
             if (TextUtils.isEmpty(event.place)) mContext.getString(R.string.unknown_location_widget) else event.place
         rv.setTextViewText(R.id.location, result)
+        val dark = TodayUtils.isWidgetDarkTheme(mContext)
+        rv.setInt(
+            R.id.location_wrap,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_rounded_bar_dark else R.drawable.widget_rounded_bar
+        )
+        rv.setTextColor(R.id.name, if (dark) Color.parseColor("#EDF3FF") else Color.parseColor("#202020"))
+        rv.setTextColor(R.id.time, if (dark) Color.parseColor("#9AA9C2") else Color.parseColor("#66202020"))
+        rv.setTextColor(R.id.location, if (dark) Color.parseColor("#AFCBFF") else Color.parseColor("#2F4CFE"))
+        rv.setInt(
+            R.id.ic_sub,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_ic_clock_white else R.drawable.widget_ic_clock
+        )
+        rv.setInt(
+            R.id.loc_ic,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_ic_location_white else R.drawable.widget_ic_location2
+        )
 
         val lockIntent = Intent()
         lockIntent.putExtra(EVENT_EXTRA2, event.id)

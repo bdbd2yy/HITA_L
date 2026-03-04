@@ -1,26 +1,34 @@
 package com.stupidtree.hitax.ui.main.navigation
 
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.res.ColorStateList
+import android.content.Intent
 import android.view.View
-import com.bumptech.glide.Glide
+import androidx.activity.result.contract.ActivityResultContracts
 import com.stupidtree.hitax.R
+import com.stupidtree.hitax.data.model.eas.EASToken
 import com.stupidtree.hitax.data.repository.EASRepository
 import com.stupidtree.hitax.databinding.FragmentNavigationBinding
 import com.stupidtree.style.base.BaseFragment
 import com.stupidtree.hitax.ui.eas.classroom.EmptyClassroomActivity
 import com.stupidtree.hitax.ui.eas.exam.ExamActivity
 import com.stupidtree.hitax.ui.eas.imp.ImportTimetableActivity
-import com.stupidtree.hitax.ui.eas.login.PopUpLoginEAS
+import com.stupidtree.hitax.ui.eas.login.EASWebLoginActivity
 import com.stupidtree.hitax.ui.eas.score.ScoreInquiryActivity
-import com.stupidtree.hitax.ui.news.lecture.ActivityLecture
 import com.stupidtree.hitax.utils.ActivityUtils
-import com.stupidtree.hitax.utils.ImageUtils
-import com.stupidtree.stupiduser.data.repository.LocalUserRepository
 import com.stupidtree.style.widgets.PopUpText
 
 class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationBinding>() {
+    private var pendingAfterLogin: (() -> Unit)? = null
+    private val easLoginLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            pendingAfterLogin?.invoke()
+            refreshAccountEntry()
+        }
+        pendingAfterLogin = null
+    }
+
     override fun getViewModelClass(): Class<NavigationViewModel> {
         return NavigationViewModel::class.java
     }
@@ -42,12 +50,7 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
 
         }
         viewModel.unreadMessageLiveData.observe(this) {
-            if (it.data ?: 0 > 0) {
-                binding?.messageNum?.visibility = View.VISIBLE
-                binding?.messageNum?.text = it.data.toString()
-            } else {
-                binding?.messageNum?.visibility = View.GONE
-            }
+            binding?.messageNum?.visibility = View.GONE
         }
         binding?.cardTimetable?.setOnClickListener {
             ActivityUtils.startTimetableManager(requireContext())
@@ -58,189 +61,98 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
             }
         }
         binding?.cardImport?.setOnClickListener {
-            ActivityUtils.showEasVerifyWindow(
-                requireContext(),
-                directTo = ImportTimetableActivity::class.java,
-                onResponseListener = object : PopUpLoginEAS.OnResponseListener {
-                    override fun onSuccess(window: PopUpLoginEAS) {
-                        ActivityUtils.startActivity(
-                            requireContext(),
-                            ImportTimetableActivity::class.java
-                        )
-                        window.dismiss()
-                    }
-
-                    override fun onFailed(window: PopUpLoginEAS) {
-
-                    }
-
-                })
+            launchEasLoginIfNeeded {
+                ActivityUtils.startActivity(requireContext(), ImportTimetableActivity::class.java)
+            }
         }
         binding?.cardEmptyClassroom?.setOnClickListener {
-            ActivityUtils.showEasVerifyWindow(
-                requireContext(),
-                directTo = EmptyClassroomActivity::class.java,
-                onResponseListener = object : PopUpLoginEAS.OnResponseListener {
-                    override fun onSuccess(window: PopUpLoginEAS) {
-                        ActivityUtils.startActivity(
-                            requireContext(),
-                            EmptyClassroomActivity::class.java
-                        )
-                        window.dismiss()
-                    }
-
-                    override fun onFailed(window: PopUpLoginEAS) {
-
-                    }
-
-                })
+            launchEasLoginIfNeeded {
+                ActivityUtils.startActivity(requireContext(), EmptyClassroomActivity::class.java)
+            }
         }
         binding?.cardScores?.setOnClickListener {
-            ActivityUtils.showEasVerifyWindow(
-                requireContext(),
-                directTo = ScoreInquiryActivity::class.java,
-                onResponseListener = object : PopUpLoginEAS.OnResponseListener {
-                    override fun onSuccess(window: PopUpLoginEAS) {
-                        ActivityUtils.startActivity(
-                            requireContext(),
-                            ScoreInquiryActivity::class.java
-                        )
-                        window.dismiss()
-                    }
-
-                    override fun onFailed(window: PopUpLoginEAS) {
-
-                    }
-                }
-            )
+            launchEasLoginIfNeeded {
+                ActivityUtils.startActivity(requireContext(), ScoreInquiryActivity::class.java)
+            }
         }
         binding?.cardSubjects?.setOnClickListener {
-            ActivityUtils.showEasVerifyWindow(
-                requireContext(),
-                directTo = ExamActivity::class.java,
-                onResponseListener = object : PopUpLoginEAS.OnResponseListener {
-                    override fun onSuccess(window: PopUpLoginEAS) {
-                        ActivityUtils.startActivity(
-                            requireContext(),
-                            ExamActivity::class.java
-                        )
-                        window.dismiss()
-                    }
-
-                    override fun onFailed(window: PopUpLoginEAS) {
-
-                    }
-                }
-            )
-        }
-        binding?.cardNews?.setOnClickListener {
-            ActivityUtils.startThetaActivity(requireActivity())
+            launchEasLoginIfNeeded {
+                ActivityUtils.startActivity(requireContext(), ExamActivity::class.java)
+            }
         }
         binding?.search?.setOnClickListener {
             binding?.search?.let { v ->
                 ActivityUtils.startSearchActivity(requireActivity(), v)
             }
         }
-        binding?.cardLecture?.setOnClickListener {
-            ActivityUtils.startActivity(requireContext(),ActivityLecture::class.java)
-        }
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onStart() {
         super.onStart()
         viewModel.startRefresh()
-
-        LocalUserRepository.getInstance(requireContext()).getLoggedInUser().let {
-            if (it.isValid()) { //如果已登录
-                //装载头像
-                binding?.avatar?.let { it1 ->
-                    com.stupidtree.stupiduser.util.ImageUtils.loadAvatarInto(
-                        requireContext(),
-                        it.avatar,
-                        it1
-                    )
-                }
-                binding?.avatar?.let { it1 ->
-                    com.stupidtree.stupiduser.util.ImageUtils.loadAvatarInto(
-                        requireContext(),
-                        it.avatar,
-                        it1
-                    )
-                }
-                //设置各种文字
-                binding?.username?.text = it.username
-                binding?.nickname?.text = it.nickname
-                binding?.userCard?.setOnClickListener { v ->
-                    ActivityUtils.startProfileActivity(
-                        requireContext(),
-                        it.id,
-                        binding?.avatar
-                    )
-                }
-            } else {
-                //未登录的信息显示
-                binding?.username?.setText(R.string.not_log_in)
-                binding?.nickname?.setText(R.string.log_in_first)
-                binding?.avatar?.setImageResource(R.drawable.place_holder_avatar)
-                binding?.userCard?.setOnClickListener {
-                    ActivityUtils.startWelcomeActivity(
-                        requireContext()
-                    )
-                }
-            }
-        }
-        refreshEasState()
+        refreshAccountEntry()
     }
 
-    private fun refreshEasState() {
+    override fun onResume() {
+        super.onResume()
+        refreshAccountEntry()
+    }
+
+    private fun refreshAccountEntry() {
         val token = activity?.application?.let { EASRepository.getInstance(it).getEasToken() }
-        token?.let { token ->
-            if (token.isLogin()) {
-                binding?.easTitle?.text = "教务登录为 ${token.username}"
-                binding?.easDot?.imageTintList = ColorStateList.valueOf(getColorPrimary())
-                binding?.easAvatar?.let { it1 ->
-                    ImageUtils.loadEASPictureInto(
-                        token.picture ?: "",
-                        it1
-                    )
-                }
-                binding?.easActionIcon?.setOnClickListener {
-                    PopUpText().setTitle(R.string.menu_logout_jw).setOnConfirmListener(object :PopUpText.OnConfirmListener{
+        if (token?.isLogin() == true) {
+            val accountName = resolveEasAccountName(token)
+            binding?.nickname?.setText(R.string.jw_login_connected_title)
+            binding?.username?.text = getString(R.string.jw_login_status_with_student_id, accountName)
+            binding?.avatar?.setImageResource(R.drawable.place_holder_avatar)
+            binding?.userStatusDot?.visibility = View.VISIBLE
+            binding?.userActionIcon?.setImageResource(R.drawable.ic_baseline_exit_to_app_24)
+            binding?.userActionIcon?.setOnClickListener {
+                PopUpText().setTitle(R.string.menu_logout_jw)
+                    .setOnConfirmListener(object : PopUpText.OnConfirmListener {
                         override fun OnConfirm() {
                             activity?.application?.let {
                                 EASRepository.getInstance(it).logout()
-                                refreshEasState()
+                                refreshAccountEntry()
                             }
                         }
-
-                    }).show(parentFragmentManager,"logout")
-
+                    }).show(parentFragmentManager, "logout")
+            }
+            binding?.userCard?.setOnClickListener(null)
+        } else {
+            binding?.nickname?.setText(R.string.jw_login_entry_title)
+            binding?.username?.setText(R.string.jw_login_entry_subtitle)
+            binding?.avatar?.setImageResource(R.drawable.place_holder_avatar)
+            binding?.userStatusDot?.visibility = View.GONE
+            binding?.userActionIcon?.setImageResource(R.drawable.ic_baseline_keyboard_arrow_right_24)
+            binding?.userActionIcon?.setOnClickListener {
+                launchEasLoginIfNeeded {
+                    refreshAccountEntry()
                 }
-                binding?.easActionIcon?.visibility = View.VISIBLE
-                binding?.easLayout?.isClickable = false
-            } else {
-                binding?.easTitle?.text = "未登录教务"
-                binding?.easDot?.imageTintList = ColorStateList.valueOf(getColorPrimaryDisabled())
-                binding?.easActionIcon?.visibility = View.INVISIBLE
-                binding?.easLayout?.isClickable = true
-                binding?.easLayout?.setOnClickListener {
-                    ActivityUtils.showEasVerifyWindow<Activity>(
-                        requireContext(),
-                        directTo = null,
-                        onResponseListener = object : PopUpLoginEAS.OnResponseListener {
-                            override fun onSuccess(window: PopUpLoginEAS) {
-                                window.dismiss()
-                                refreshEasState()
-                            }
-                            override fun onFailed(window: PopUpLoginEAS) {
-
-                            }
-
-                        })
+            }
+            binding?.userCard?.setOnClickListener {
+                launchEasLoginIfNeeded {
+                    refreshAccountEntry()
                 }
             }
         }
+    }
+
+    private fun resolveEasAccountName(token: EASToken): String {
+        return when {
+            !token.stuId.isNullOrBlank() -> token.stuId!!.trim()
+            else -> "--"
+        }
+    }
+
+    private fun launchEasLoginIfNeeded(onLoggedIn: () -> Unit) {
+        val token = activity?.application?.let { EASRepository.getInstance(it).getEasToken() }
+        if (token?.isLogin() == true) {
+            onLoggedIn()
+            return
+        }
+        pendingAfterLogin = onLoggedIn
+        easLoginLauncher.launch(Intent(requireContext(), EASWebLoginActivity::class.java))
     }
 
 

@@ -1,7 +1,7 @@
 package com.stupidtree.hitax.ui.main
 
-import android.content.Intent
 import android.graphics.Color
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -11,8 +11,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.drawerlayout.widget.DrawerLayout.GONE
@@ -28,13 +26,13 @@ import com.stupidtree.hitax.ui.main.navigation.NavigationFragment
 import com.stupidtree.hitax.ui.main.timeline.FragmentTimeLine
 import com.stupidtree.hitax.ui.main.timetable.TimetableFragment
 import com.stupidtree.hitax.ui.main.timetable.panel.FragmentTimetablePanel
+import com.stupidtree.hitax.ui.widgets.WidgetUtils
 import com.stupidtree.hitax.utils.ActivityUtils
 import com.stupidtree.hitax.utils.ImageUtils
 import com.stupidtree.stupiduser.data.repository.LocalUserRepository
 import com.stupidtree.style.ThemeTools
 import com.stupidtree.style.base.BaseActivity
 import com.stupidtree.style.base.BaseTabAdapter
-import com.stupidtree.style.widgets.PopUpText
 import me.ibrahimsn.lib.OnItemSelectedListener
 
 /**
@@ -42,14 +40,6 @@ import me.ibrahimsn.lib.OnItemSelectedListener
  */
 class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
     TimetableFragment.MainPageController, FragmentTimeLine.MainPageController {
-
-    /**
-     * 抽屉里的View
-     */
-    private var drawerAvatar: ImageView? = null
-    private var drawerNickname: TextView? = null
-    private var drawerUsername: TextView? = null
-    private var drawerHeader: ViewGroup? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar)
@@ -58,15 +48,9 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
 
     private fun setUpDrawer() {
         binding.drawerNavigationview.itemIconTintList = null
-        val headerView =
-            binding.drawerNavigationview.inflateHeaderView(R.layout.activity_main_nav_header)
         binding.drawer.setStatusBarBackgroundColor(Color.TRANSPARENT)
         binding.drawer.setScrimColor(getBackgroundColorSecondAsTint())
         binding.drawer.drawerElevation = ImageUtils.dp2px(this, 84f).toFloat()
-        drawerAvatar = headerView.findViewById(R.id.avatar)
-        drawerHeader = headerView.findViewById(R.id.drawer_header)
-        drawerNickname = headerView.findViewById(R.id.nickname)
-        drawerUsername = headerView.findViewById(R.id.username)
         binding.drawer.addDrawerListener(object : DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
                 //offset 偏移值
@@ -92,14 +76,8 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
         binding.drawerNavigationview.setNavigationItemSelectedListener { item: MenuItem ->
             var jumped = true
             when (item.itemId) {
-                R.id.drawer_nav_search -> {
-                    ActivityUtils.startSearchActivity(getThis())
-                }
                 R.id.drawer_nav_ua -> {
                     UserAgreementDialog().show(supportFragmentManager, "ua")
-                }
-                R.id.drawer_nav_timetable_manager -> {
-                    ActivityUtils.startTimetableManager(getThis())
                 }
                 R.id.drawer_nav_about -> {
                     ActivityUtils.startActivity(getThis(), ActivityAbout::class.java)
@@ -229,6 +207,7 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
 
         binding.switchTheme.setOnClickListener {
             ThemeTools.switchTheme(getThis())
+            WidgetUtils.sendRefreshToAll(getThis())
         }
         viewModel.checkUpdateResult.observe(this) {
             if (it.state == DataState.STATE.SUCCESS) {
@@ -241,30 +220,6 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
         }
         viewModel.loggedInUserLiveData.observe(this) {
             Log.e("user", it.toString())
-            if (it.isValid()) { //如果已登录
-                //装载头像
-                com.stupidtree.stupiduser.util.ImageUtils.loadAvatarInto(
-                    this,
-                    it.avatar,
-                    drawerAvatar!!
-                )
-                //设置各种文字
-                drawerUsername?.text = it.username
-                drawerNickname?.text = it.nickname
-                drawerHeader?.setOnClickListener {
-                    ActivityUtils.startProfileActivity(
-                        getThis(),
-                        LocalUserRepository.getInstance(applicationContext).getLoggedInUser().id,
-                        drawerAvatar
-                    )
-                }
-            } else {
-                //未登录的信息显示
-                drawerUsername?.setText(R.string.not_log_in)
-                drawerNickname?.setText(R.string.log_in_first)
-                drawerAvatar?.setImageResource(R.drawable.place_holder_avatar)
-                drawerHeader?.setOnClickListener { ActivityUtils.startWelcomeActivity(getThis()) }
-            }
         }
     }
 

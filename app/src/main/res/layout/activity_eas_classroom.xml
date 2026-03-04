@@ -18,6 +18,7 @@
             android:id="@+id/collapse"
             android:layout_width="match_parent"
             android:layout_height="160dp"
+            app:contentScrim="?attr/backgroundColorBottom"
             app:expandedTitleMargin="24dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:statusBarScrim="#00000000"
@@ -151,4 +152,3 @@
             android:padding="8dp" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

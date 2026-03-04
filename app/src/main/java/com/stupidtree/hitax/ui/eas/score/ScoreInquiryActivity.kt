@@ -37,6 +37,9 @@ class ScoreInquiryActivity :
                         }
                     }
                     viewModel.selectedTermLiveData.value = data.data?.get(0)
+                } else {
+                    binding.refresh.isRefreshing = false
+                    binding.schoolSemesterText.setText(R.string.navi_semister_no_data)
                 }
             } else {
                 binding.refresh.isRefreshing = false
@@ -62,7 +65,7 @@ class ScoreInquiryActivity :
         }
         viewModel.selectedTestTypeLiveData.observe(this) {
             it?.let {
-                binding.refresh.isRefreshing = true
+                binding.refresh.isRefreshing = viewModel.selectedTermLiveData.value != null
                 binding.testTypeText.text = when (it) {
                     EASService.TestType.ALL -> getString(R.string.test_type_all)
                     EASService.TestType.NORMAL -> getString(R.string.test_type_normal)

@@ -5,7 +5,10 @@ import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
 import android.net.Uri
+import android.graphics.Color
 import android.view.View
 import android.widget.RemoteViews
 import com.stupidtree.hitax.R
@@ -15,12 +18,23 @@ import com.stupidtree.hitax.ui.widgets.WidgetUtils
 import com.stupidtree.hitax.ui.widgets.today.normal.TodayWidget
 import com.stupidtree.hitax.ui.widgets.today.slim.TodayWidgetSlim
 import com.stupidtree.hitax.utils.TimeTools
+import com.stupidtree.style.ThemeTools
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
 
 object TodayUtils {
+
+    fun isWidgetDarkTheme(context: Context): Boolean {
+        return when (ThemeTools.getThemeMode(context)) {
+            ThemeTools.MODE.DARK -> true
+            ThemeTools.MODE.LIGHT -> false
+            ThemeTools.MODE.FOLLOW -> {
+                (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            }
+        }
+    }
 
     fun BroadcastReceiver.goAsync(
         coroutineScope: CoroutineScope = GlobalScope,
@@ -48,6 +62,7 @@ object TodayUtils {
             context.packageName ?: "",
             if (slim) R.layout.widget_today_slim else R.layout.widget_today
         )
+        val dark = isWidgetDarkTheme(context)
         val btIntent = Intent().setAction(WidgetUtils.EVENT_REFRESH)
         btIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         btIntent.setClass(
@@ -76,10 +91,17 @@ object TodayUtils {
         gridIntent.action = TodayWidget.EVENT_CLICK
         gridIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         gridIntent.data = Uri.parse(gridIntent.toUri(Intent.URI_INTENT_SCHEME))
+        val clickTemplateFlags =
+            PendingIntent.FLAG_UPDATE_CURRENT or
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_MUTABLE
+                } else {
+                    PendingIntent.FLAG_IMMUTABLE
+                }
         val pendingIntent = PendingIntent.getActivity(
             context,
             0, gridIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            clickTemplateFlags
         )
 
         //        val pendingIntent = PendingIntent.getBroadcast(
@@ -89,6 +111,7 @@ object TodayUtils {
 //        )
         // 设置intent模板
         views.setPendingIntentTemplate(R.id.list, pendingIntent)
+        applyWidgetTheme(views, dark)
         views.setTextViewText(
             R.id.tv_title,
             TimeTools.getDateString(
@@ -129,5 +152,30 @@ object TodayUtils {
         }
         appWidgetManager.updateAppWidget(appWidgetId, views)
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list)
+    }
+
+    private fun applyWidgetTheme(views: RemoteViews, dark: Boolean) {
+        views.setInt(
+            R.id.widget_container,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_today_background_dark else R.drawable.widget_today_background
+        )
+        views.setInt(
+            R.id.imageView12,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_rounded_divider_dark else R.drawable.widget_rounded_divider
+        )
+        views.setInt(
+            R.id.refresh_icon,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_ic_refresh_dark else R.drawable.widget_ic_refresh
+        )
+        views.setInt(
+            R.id.loading_icon,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_placeholder_timeline_dark else R.drawable.widget_placeholder_timeline
+        )
+        views.setTextColor(R.id.tv_title, if (dark) Color.parseColor("#ECF2FF") else Color.parseColor("#202020"))
+        views.setTextColor(R.id.loading, if (dark) Color.parseColor("#9EADC7") else Color.parseColor("#20303030"))
     }
 }

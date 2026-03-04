@@ -21,6 +21,7 @@
             android:id="@+id/collapse"
             android:layout_width="match_parent"
             android:layout_height="180dp"
+            app:contentScrim="?attr/backgroundColorBottom"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:statusBarScrim="#00000000"
             app:toolbarId="@id/toolbar">

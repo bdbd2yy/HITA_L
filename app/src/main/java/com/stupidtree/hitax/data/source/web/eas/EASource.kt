@@ -52,11 +52,25 @@ class EASource internal constructor() : EASService {
                     session.newRequest("https://ids.hit.edu.cn/authserver/combinedLogin.do?type=IDSUnion&appId=ff2dfca3a2a2448e9026a8c6e38fa52b&success=http%3A%2F%2Fjw.hitsz.edu.cn%2FcasLogin")
                         .get()
 
-                val url = "https://sso.hitsz.edu.cn:7002" + doc1.select("#authZForm").first()
-                    .attr("action")
-                val client_id: String = doc1.select("input[name=client_id]").first().attr("value")
-                val scope: String = doc1.select("input[name=scope]").first().attr("value")
-                val state: String = doc1.select("input[name=state]").first().attr("value")
+                val authForm = doc1.selectFirst("#authZForm")
+                    ?: doc1.selectFirst("form[id=authZForm]")
+                    ?: doc1.selectFirst("form[action*=authorize]")
+                val action = authForm?.attr("action") ?: ""
+                if (action.isBlank()) {
+                    res.postValue(DataState(DataState.STATE.FETCH_FAILED))
+                    return@Thread
+                }
+                val url = if (action.startsWith("http")) {
+                    action
+                } else {
+                    "https://sso.hitsz.edu.cn:7002$action"
+                }
+                val client_id: String = (authForm?.selectFirst("input[name=client_id]")
+                    ?: doc1.selectFirst("input[name=client_id]"))?.attr("value") ?: ""
+                val scope: String = (authForm?.selectFirst("input[name=scope]")
+                    ?: doc1.selectFirst("input[name=scope]"))?.attr("value") ?: ""
+                val state: String = (authForm?.selectFirst("input[name=state]")
+                    ?: doc1.selectFirst("input[name=state]"))?.attr("value") ?: ""
 
                 val resp3: Connection.Response = session.newRequest(url).data("action", "authorize")
                     .data("response_type", "code")
@@ -66,44 +80,57 @@ class EASource internal constructor() : EASService {
                     .data("state", state)
                     .data("username", username)
                     .data("password", password).method(Connection.Method.POST).execute()
-                val login = resp3.url().file == "/authentication/main"
                 val cookies: HashMap<String, String> = HashMap()
 
-                if (login) {
-                    session.cookieStore().get(URI.create("http://jw.hitsz.edu.cn")).forEach { c ->
-                        cookies[c.name] = c.value
-                    }
-                    val token = EASToken() //登录成功，创建tokrn
-                    token.cookies = cookies //设置cookies
-                    token.username = username
-                    token.password = password
-                    val s = Jsoup.connect("$hostName/UserManager/queryxsxx")
-                        .timeout(timeout)
-                        .cookies(cookies)
-                        .headers(defaultRequestHeader)
-                        .header("X-Requested-With", "XMLHttpRequest")
-                        .ignoreContentType(true)
-                        .ignoreHttpErrors(true)
-                        .post()
-                    val json = s.getElementsByTag("body").text()
-                    val jo = JsonUtils.getJsonObject(json)
-                    token.stutype = if (jo?.getString("PYLX")
-                            ?.lowercase() == "1"
-                    ) EASToken.TYPE.UNDERGRAD else EASToken.TYPE.GRAD
-                    token.school = jo?.optString("YXMC")
-                    token.sfxsx = jo?.optString("sfxsx")
-                    token.major = jo?.optString("ZYMC")
-                    token.picture = jo?.optString("ZPBSLJ")
-                    token.phone = jo?.optString("LXDH")
-                    token.id = jo?.optString("ID")
-                    token.email = jo?.optString("DZYX")
-                    token.grade = jo?.optString("NJMC")
-                    token.stuId = jo?.optString("XH")
-                    token.name = jo?.optString("XM")
-                    res.postValue(DataState(token, DataState.STATE.SUCCESS))
-                } else {
-                    res.postValue(DataState(DataState.STATE.FETCH_FAILED))
+                runCatching {
+                    session.cookieStore().get(URI.create("http://jw.hitsz.edu.cn"))
+                }.getOrDefault(emptyList()).forEach { c ->
+                    cookies[c.name] = c.value
                 }
+                runCatching {
+                    session.cookieStore().get(URI.create("https://jw.hitsz.edu.cn"))
+                }.getOrDefault(emptyList()).forEach { c ->
+                    cookies[c.name] = c.value
+                }
+                resp3.cookies().forEach { (k, v) ->
+                    cookies[k] = v
+                }
+                if (cookies.isEmpty()) {
+                    res.postValue(DataState(DataState.STATE.FETCH_FAILED))
+                    return@Thread
+                }
+                val token = EASToken() //登录成功，创建tokrn
+                token.cookies = cookies //设置cookies
+                token.username = username
+                token.password = password
+                val s = Jsoup.connect("$hostName/UserManager/queryxsxx")
+                    .timeout(timeout)
+                    .cookies(cookies)
+                    .headers(defaultRequestHeader)
+                    .header("X-Requested-With", "XMLHttpRequest")
+                    .ignoreContentType(true)
+                    .ignoreHttpErrors(true)
+                    .post()
+                val json = s.getElementsByTag("body").text()
+                val jo = JsonUtils.getJsonObject(json)
+                if (jo == null || !jo.has("XH")) {
+                    res.postValue(DataState(DataState.STATE.FETCH_FAILED))
+                    return@Thread
+                }
+                token.stutype = if (jo.optString("PYLX")
+                        .lowercase() == "1"
+                ) EASToken.TYPE.UNDERGRAD else EASToken.TYPE.GRAD
+                token.school = jo.optString("YXMC")
+                token.sfxsx = jo.optString("sfxsx")
+                token.major = jo.optString("ZYMC")
+                token.picture = jo.optString("ZPBSLJ")
+                token.phone = jo.optString("LXDH")
+                token.id = jo.optString("ID")
+                token.email = jo.optString("DZYX")
+                token.grade = jo.optString("NJMC")
+                token.stuId = jo.optString("XH")
+                token.name = jo.optString("XM")
+                res.postValue(DataState(token, DataState.STATE.SUCCESS))
             } catch (e: Exception) {
                 e.printStackTrace()
                 res.postValue(DataState(DataState.STATE.FETCH_FAILED))

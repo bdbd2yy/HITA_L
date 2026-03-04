@@ -45,6 +45,52 @@ class EASRepository internal constructor(application: Application) {
         }
     }
 
+    fun loginByWebCookies(
+        cookies: HashMap<String, String>,
+        username: String?,
+        password: String?
+    ): LiveData<DataState<Boolean>> {
+        val token = EASToken()
+        token.cookies = cookies
+        token.username = username
+        token.password = password
+        return easService.loginCheck(token).map {
+            if (it.state == DataState.STATE.SUCCESS && it.data?.first == true) {
+                val latest = it.data?.second ?: token
+                latest.username = username
+                latest.password = password
+                easPreferenceSource.saveEasToken(latest)
+                return@map DataState(true, DataState.STATE.SUCCESS)
+            }
+            return@map DataState(false, it.state)
+        }
+    }
+
+    fun saveWebLoginTokenByCookies(
+        cookies: HashMap<String, String>,
+        username: String?,
+        password: String?
+    ): Boolean {
+        if (!isLikelyWebLoginSession(cookies)) {
+            return false
+        }
+        val token = EASToken()
+        token.cookies = HashMap(cookies)
+        token.username = username
+        token.password = password
+        easPreferenceSource.saveEasToken(token)
+        return true
+    }
+
+    private fun isLikelyWebLoginSession(cookies: Map<String, String>): Boolean {
+        if (cookies.isEmpty()) return false
+        val keys = cookies.keys.map { it.lowercase(Locale.ROOT) }
+        val hasSessionKey = keys.any {
+            it == "jsessionid" || it == "castgc" || it == "tgc" || it == "route"
+        }
+        return hasSessionKey || cookies.size >= 3
+    }
+
     /**
      * 验证登录
      */

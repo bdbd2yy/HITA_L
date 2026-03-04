@@ -2,9 +2,10 @@ package com.stupidtree.style
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 
 object ThemeTools {
+    const val EXTRA_SKIP_LOGIN_CHECK_ONCE = "com.stupidtree.style.EXTRA_SKIP_LOGIN_CHECK_ONCE"
+
     enum class MODE { DARK, LIGHT, FOLLOW }
 
 
@@ -34,6 +35,7 @@ object ThemeTools {
             MODE.FOLLOW->MODE.DARK
         }
         setThemeMode(activity,newMode)
+        activity.intent?.putExtra(EXTRA_SKIP_LOGIN_CHECK_ONCE, true)
         activity.recreate()
     }
 }

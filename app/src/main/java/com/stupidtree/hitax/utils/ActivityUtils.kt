@@ -9,7 +9,6 @@ import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityOptionsCompat
-import com.stupidtree.hita.theta.ThetaActivity
 import com.stupidtree.hitax.R
 import com.stupidtree.hitax.data.repository.EASRepository
 import com.stupidtree.hitax.ui.eas.login.PopUpLoginEAS
@@ -21,9 +20,7 @@ import com.stupidtree.hitax.ui.subject.SubjectActivity
 import com.stupidtree.hitax.ui.teacher.ActivityTeacherOfficial
 import com.stupidtree.hitax.ui.timetable.detail.TimetableDetailActivity
 import com.stupidtree.hitax.ui.timetable.manager.TimetableManagerActivity
-import com.stupidtree.hitax.ui.welcome.WelcomeActivity
 import com.stupidtree.stupiduser.data.model.CheckUpdateResult
-import com.stupidtree.stupiduser.data.repository.LocalUserRepository
 import com.stupidtree.style.base.BaseActivity
 import com.stupidtree.style.widgets.PopUpText
 import com.stupidtree.style.widgets.PopUpUpdate
@@ -64,11 +61,6 @@ object ActivityUtils {
     }
     fun startMyProfileActivity(from: Context) {
         val i = Intent(from, MyProfileActivity::class.java)
-        from.startActivity(i)
-    }
-
-    fun startWelcomeActivity(from: Context) {
-        val i = Intent(from, WelcomeActivity::class.java)
         from.startActivity(i)
     }
 
@@ -123,16 +115,6 @@ object ActivityUtils {
         val i = Intent(from, TimetableDetailActivity::class.java)
         i.putExtra("id", id)
         from.startActivity(i)
-    }
-
-    fun startThetaActivity(from: Context) {
-        if(LocalUserRepository.getInstance(from).getLoggedInUser().isValid()){
-            val i = Intent(from, ThetaActivity::class.java)
-            from.startActivity(i)
-        }else{
-            startWelcomeActivity(from)
-        }
-
     }
 
     fun startProfileActivity(from: Context, userId: String?, imageView: ImageView?=null) {
