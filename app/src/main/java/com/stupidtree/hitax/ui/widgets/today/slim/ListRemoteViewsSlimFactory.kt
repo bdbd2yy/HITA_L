@@ -55,7 +55,7 @@ internal class ListRemoteViewsSlimFactory(val mContext: Context, intent: Intent)
         rv.setInt(
             R.id.loc_ic,
             "setBackgroundResource",
-            if (dark) R.drawable.widget_ic_location_white else R.drawable.widget_ic_location2
+            if (dark) R.drawable.widget_ic_location_white else R.drawable.widget_ic_location
         )
 
         val lockIntent = Intent()

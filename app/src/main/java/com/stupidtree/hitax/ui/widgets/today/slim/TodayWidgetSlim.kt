@@ -12,6 +12,7 @@ import com.stupidtree.hitax.ui.widgets.WidgetUtils.EVENT_REFRESH
 import com.stupidtree.hitax.ui.widgets.today.TodayUtils
 import com.stupidtree.hitax.ui.widgets.today.TodayUtils.goAsync
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.delay
 
 /**
  * Implementation of App Widget functionality.
@@ -46,11 +47,14 @@ class TodayWidgetSlim : AppWidgetProvider() {
             EVENT_REFRESH -> {
                 val cn = ComponentName(context, TodayWidgetSlim::class.java)
                 val mgr = AppWidgetManager.getInstance(context)
+                val appWidgetIds = mgr.getAppWidgetIds(cn)
+                TodayUtils.showRefreshingState(context, mgr, appWidgetIds, slim = true)
                 val timetableRepo =
                     TimetableRepository.getInstance(context.applicationContext as Application)
                 goAsync {
                     val events = timetableRepo.getTodayEventsSync()
-                    for (appWidgetId in mgr.getAppWidgetIds(cn)) {
+                    delay(220)
+                    for (appWidgetId in appWidgetIds) {
                        // Log.e("WI2", "refressh$appWidgetId")
                         TodayUtils.setUpOneWidget(context, events, mgr, appWidgetId, true)
                     }
@@ -71,4 +75,3 @@ class TodayWidgetSlim : AppWidgetProvider() {
 
 
 }
-

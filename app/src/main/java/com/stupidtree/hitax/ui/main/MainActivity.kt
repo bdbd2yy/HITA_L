@@ -40,6 +40,12 @@ import me.ibrahimsn.lib.OnItemSelectedListener
  */
 class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
     TimetableFragment.MainPageController, FragmentTimeLine.MainPageController {
+    private var themeSwitching = false
+
+    companion object {
+        private var lastThemeMode: ThemeTools.MODE? = null
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSupportActionBar(binding.toolbar)
@@ -96,8 +102,11 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
 
     override fun onStart() {
         super.onStart()
+        themeSwitching = false
+        binding.switchTheme.isEnabled = true
         viewModel.startRefreshUser()
         refreshTheme()
+        refreshWidgetsIfThemeChanged()
         try {
             val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 packageManager.getPackageInfo(
@@ -206,8 +215,12 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
         }
 
         binding.switchTheme.setOnClickListener {
+            if (themeSwitching) {
+                return@setOnClickListener
+            }
+            themeSwitching = true
+            binding.switchTheme.isEnabled = false
             ThemeTools.switchTheme(getThis())
-            WidgetUtils.sendRefreshToAll(getThis())
         }
         viewModel.checkUpdateResult.observe(this) {
             if (it.state == DataState.STATE.SUCCESS) {
@@ -243,6 +256,14 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
             ThemeTools.MODE.DARK -> binding.switchTheme.setImageResource(R.drawable.ic_moon2)
             ThemeTools.MODE.LIGHT -> binding.switchTheme.setImageResource(R.drawable.ic_sun)
             else -> binding.switchTheme.setImageResource(R.drawable.ic_moon_auto)
+        }
+    }
+
+    private fun refreshWidgetsIfThemeChanged() {
+        val currentMode = ThemeTools.getThemeMode(this)
+        if (lastThemeMode != currentMode) {
+            WidgetUtils.sendRefreshToAll(getThis(), force = true)
+            lastThemeMode = currentMode
         }
     }
 

@@ -2,10 +2,12 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialKeyguardLayout="@layout/widget_today_slim"
     android:initialLayout="@layout/widget_today_slim"
-    android:minWidth="120dp"
-    android:minHeight="80dp"
+    android:minWidth="180dp"
+    android:minHeight="120dp"
     android:previewImage="@drawable/widget_slim_preview"
     android:resizeMode="vertical|horizontal"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
     android:updatePeriodMillis="86400000"
     android:widgetCategory="home_screen" />
 

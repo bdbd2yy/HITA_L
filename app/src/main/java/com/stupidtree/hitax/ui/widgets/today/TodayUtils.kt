@@ -69,14 +69,17 @@ object TodayUtils {
             context,
             if (slim) TodayWidgetSlim::class.java else TodayWidget::class.java
         )
+        btIntent.data = Uri.parse("hita://widget/refresh/${if (slim) "slim" else "normal"}/$appWidgetId")
+        val refreshPendingIntentRequestCode = appWidgetId * 2 + if (slim) 1 else 0
         val btPendingIntent: PendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                0,
+                refreshPendingIntentRequestCode,
                 btIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         views.setOnClickPendingIntent(R.id.refresh, btPendingIntent)
+        views.setOnClickPendingIntent(R.id.refresh_icon, btPendingIntent)
         val ai = Intent(context, MainActivity::class.java)
         val bi =
             PendingIntent.getActivity(
@@ -150,8 +153,37 @@ object TodayUtils {
             views.setViewVisibility(R.id.list, View.VISIBLE)
             views.setViewVisibility(R.id.place_holder, View.GONE)
         }
+        views.setInt(
+            R.id.refresh_icon,
+            "setBackgroundResource",
+            if (dark) R.drawable.widget_ic_refresh_dark else R.drawable.widget_ic_refresh
+        )
+        views.setBoolean(R.id.refresh, "setEnabled", true)
         appWidgetManager.updateAppWidget(appWidgetId, views)
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list)
+    }
+
+    fun showRefreshingState(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+        slim: Boolean
+    ) {
+        val dark = isWidgetDarkTheme(context)
+        for (appWidgetId in appWidgetIds) {
+            val views = RemoteViews(
+                context.packageName ?: "",
+                if (slim) R.layout.widget_today_slim else R.layout.widget_today
+            )
+            applyWidgetTheme(views, dark)
+            views.setInt(
+                R.id.refresh_icon,
+                "setBackgroundResource",
+                if (dark) R.drawable.widget_ic_refresh_dark_pressed else R.drawable.widget_ic_refresh_pressed
+            )
+            views.setBoolean(R.id.refresh, "setEnabled", false)
+            appWidgetManager.partiallyUpdateAppWidget(appWidgetId, views)
+        }
     }
 
     private fun applyWidgetTheme(views: RemoteViews, dark: Boolean) {
