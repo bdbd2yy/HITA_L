@@ -221,7 +221,7 @@
                             android:ellipsize="marquee"
                             android:marqueeRepeatLimit="marquee_forever"
                             android:singleLine="true"
-                            android:text="@string/give_me_notification_permission"
+                            android:text="@string/none"
                             android:textColor="?attr/textColorPrimary"
                             android:textSize="16sp"
                             android:textStyle="normal" />
@@ -301,7 +301,7 @@
                             android:ellipsize="marquee"
                             android:marqueeRepeatLimit="marquee_forever"
                             android:singleLine="true"
-                            android:text="@string/give_me_notification_permission"
+                            android:text="@string/no_timetable"
                             android:textColor="?attr/textColorPrimary"
                             android:textSize="16sp"
                             android:textStyle="normal" />

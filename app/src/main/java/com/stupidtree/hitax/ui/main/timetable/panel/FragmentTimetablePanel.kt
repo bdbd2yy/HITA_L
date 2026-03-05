@@ -42,16 +42,16 @@ class FragmentTimetablePanel : TransparentModeledBottomSheetDialog<TimetablePane
 
     @SuppressLint("SetTextI18n")
     fun bindLiveData() {
-        viewModel.drawBGLinesLiveData.observe(this) {
+        viewModel.drawBGLinesLiveData.observe(viewLifecycleOwner) {
             binding?.drawbglines?.isChecked = it
         }
-        viewModel.startDateLiveData.observe(this) {
+        viewModel.startDateLiveData.observe(viewLifecycleOwner) {
             binding?.from?.text = TimeInDay(it/100,it%100).toString()
         }
-        viewModel.colorEnableLiveData.observe(this) {
+        viewModel.colorEnableLiveData.observe(viewLifecycleOwner) {
             binding?.colorEnable?.isChecked = it
         }
-        viewModel.fadeEnableLiveData.observe(this) {
+        viewModel.fadeEnableLiveData.observe(viewLifecycleOwner) {
             binding?.fadeEnable?.isChecked = it
         }
     }

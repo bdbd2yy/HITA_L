@@ -73,7 +73,7 @@ class FragmentTimeLine : BaseFragmentWithReceiver<FragmentTimelineViewModel, Fra
     private fun initListAndAdapter() {
         listAdapter = TimelineListAdapter(this.requireContext(), mutableListOf())
         topListAdapter = TimelineTopListAdapter(this.requireContext(), mutableListOf())
-        binding?.list?.setItemViewCacheSize(Int.MAX_VALUE)
+        binding?.list?.setItemViewCacheSize(20)
         binding?.list?.adapter = listAdapter
         binding?.list?.layoutManager = LinearLayoutManager(requireContext())
         listAdapter?.setOnItemClickListener(object :
@@ -144,7 +144,7 @@ class FragmentTimeLine : BaseFragmentWithReceiver<FragmentTimelineViewModel, Fra
 
     override fun initViews(view: View) {
         initListAndAdapter()
-        viewModel.todayEventsLiveData.observe(this) {
+        viewModel.todayEventsLiveData.observe(viewLifecycleOwner) {
             Collections.sort(it) { p0, p1 -> p0.from.compareTo(p1.from) }
             val x = it.toMutableList()
             x.addAll(0,HintUtils.getHints(requireContext()))
@@ -159,7 +159,7 @@ class FragmentTimeLine : BaseFragmentWithReceiver<FragmentTimelineViewModel, Fra
             activity?.let { it1 -> WidgetUtils.sendRefreshToAll(it1) }
         }
 
-        viewModel.weekEventsLiveData.observe(this){
+        viewModel.weekEventsLiveData.observe(viewLifecycleOwner){
             Collections.sort(it) { p0, p1 -> p0.from.compareTo(p1.from) }
             if(it.isNullOrEmpty()){
                 binding?.extendHeader?.findViewById<ImageView>(R.id.empty)?.visibility = View.VISIBLE
@@ -189,6 +189,14 @@ class FragmentTimeLine : BaseFragmentWithReceiver<FragmentTimelineViewModel, Fra
         inf.addAction(ACTION_TIME_TICK)
         inf.addAction(Intent.ACTION_TIME_CHANGED)
         return inf
+    }
+
+    override fun onDestroyView() {
+        binding?.list?.adapter = null
+        binding?.extendHeader?.findViewById<RecyclerView>(R.id.top_list)?.adapter = null
+        listAdapter = null
+        topListAdapter = null
+        super.onDestroyView()
     }
 
 

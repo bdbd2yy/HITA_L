@@ -47,6 +47,12 @@ class TimetableFragment :
         return FragmentTimetableBinding.inflate(layoutInflater)
     }
 
+    override fun onDestroyView() {
+        binding?.pager?.adapter = null
+        views.fill(null)
+        super.onDestroyView()
+    }
+
     override fun getViewModelClass(): Class<TimetableViewModel> {
         return TimetableViewModel::class.java
     }
@@ -116,24 +122,24 @@ class TimetableFragment :
             scrollToDate(System.currentTimeMillis())
         }
         binding?.pager?.currentItem = pagerAdapter.count / 2 + (WINDOW_SIZE / 2)
-        viewModel.timetableLiveData.observe(this) {
+        viewModel.timetableLiveData.observe(viewLifecycleOwner) {
             viewModel.currentPageStartDate.value?.let { date ->
                 refreshWeekLayout(date, it)
             }
         }
-        viewModel.currentPageStartDate.observe(this) { date ->
+        viewModel.currentPageStartDate.observe(viewLifecycleOwner) { date ->
             viewModel.timetableLiveData.value?.let {
                 refreshWeekLayout(date, it)
             }
         }
-        viewModel.startTimeLiveData.observe(this) {
+        viewModel.startTimeLiveData.observe(viewLifecycleOwner) {
             binding?.labels?.setStartDate(it / 100, it % 100)
         }
         for (i in 0 until WINDOW_SIZE) {
-            viewModel.windowStartData[i].observe(this) { date ->
+            viewModel.windowStartData[i].observe(viewLifecycleOwner) { date ->
                 views[i]?.setDateTexts(date)
             }
-            viewModel.windowEventsData[i].observe(this) {
+            viewModel.windowEventsData[i].observe(viewLifecycleOwner) {
                 viewModel.windowStartData[i].value?.let { date ->
                     val dataHash = it.hashCode()
                     if (it.second != views[i]?.getStyleSheet()//样式不同也更新

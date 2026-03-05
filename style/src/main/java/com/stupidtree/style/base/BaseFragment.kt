@@ -27,6 +27,7 @@ abstract class BaseFragment<T : ViewModel,V:ViewBinding> : Fragment() {
     protected abstract fun getViewModelClass(): Class<T>
     protected abstract fun initViews(view: View)
     protected abstract fun initViewBinding():V
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = initViewBinding()
         getViewModelClass().let {
@@ -36,11 +37,13 @@ abstract class BaseFragment<T : ViewModel,V:ViewBinding> : Fragment() {
                 ViewModelProvider(this).get(it)
             }
         }
-        binding?.let {
-            initViews(it.root)
-        }
-        viewModelInit = true
         return binding?.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initViews(view)
+        viewModelInit = true
     }
 
     fun getColorPrimary():Int{
