@@ -17,16 +17,16 @@ interface EventItemDao {
     @Query("DELETE FROM events WHERE timetableId is :timetableId AND (type is 'CLASS' OR type is 'EXAM')")
     fun deleteCourseFromTimetable(timetableId: String)
 
-    @Query("SELECT * FROM events WHERE `from` >= :fromT AND `from` <= :toT AND `to` >= :fromT AND `to` <= :toT")
+    @Query("SELECT * FROM events WHERE `from` >= :fromT AND `from` <= :toT AND `to` >= :fromT AND `to` <= :toT ORDER BY `from` ASC, `to` ASC")
     fun getEventsDuring(fromT: Long, toT: Long): LiveData<List<EventItem>>
 
     @Query("SELECT * FROM events WHERE `from` >= :fromT order by `from` asc LIMIT :limit")
     fun getEventsAfter(fromT: Long, limit: Int): LiveData<List<EventItem>>
 
-    @Query("SELECT * FROM events WHERE `from` >= :fromT AND `from` <= :toT AND `to` >= :fromT AND `to` <= :toT")
+    @Query("SELECT * FROM events WHERE `from` >= :fromT AND `from` <= :toT AND `to` >= :fromT AND `to` <= :toT ORDER BY `from` ASC, `to` ASC")
     fun getEventsDuringSync(fromT: Long, toT: Long): List<EventItem>
 
-    @Query("SELECT * FROM events WHERE `from` >= :fromT AND `from` <= :toT AND `to` >= :fromT AND `to` <= :toT")
+    @Query("SELECT * FROM events WHERE `from` >= :fromT AND `from` <= :toT AND `to` >= :fromT AND `to` <= :toT ORDER BY `from` ASC, `to` ASC")
     fun getEventsDurin(fromT: Long, toT: Long): LiveData<List<EventItem>>
 
 
