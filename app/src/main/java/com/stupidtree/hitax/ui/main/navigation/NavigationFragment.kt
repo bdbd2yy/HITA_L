@@ -3,6 +3,7 @@ package com.stupidtree.hitax.ui.main.navigation
 import android.app.Activity
 import android.content.Intent
 import android.view.View
+import android.webkit.CookieManager
 import androidx.activity.result.contract.ActivityResultContracts
 import com.stupidtree.hitax.R
 import com.stupidtree.hitax.data.model.eas.EASToken
@@ -34,14 +35,14 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
     }
 
     override fun initViews(view: View) {
-        viewModel.recentTimetableLiveData.observe(this) {
+        viewModel.recentTimetableLiveData.observe(viewLifecycleOwner) {
             if (it == null) {
                 binding?.recentSubtitle?.setText(R.string.none)
             } else {
                 binding?.recentSubtitle?.text = it.name
             }
         }
-        viewModel.timetableCountLiveData.observe(this) {
+        viewModel.timetableCountLiveData.observe(viewLifecycleOwner) {
             if (it == 0) {
                 binding?.timetableSubtitle?.setText(R.string.no_timetable)
             } else {
@@ -49,7 +50,7 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
             }
 
         }
-        viewModel.unreadMessageLiveData.observe(this) {
+        viewModel.unreadMessageLiveData.observe(viewLifecycleOwner) {
             binding?.messageNum?.visibility = View.GONE
         }
         binding?.cardTimetable?.setOnClickListener {
@@ -113,6 +114,9 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
                         override fun OnConfirm() {
                             activity?.application?.let {
                                 EASRepository.getInstance(it).logout()
+                                val cookieManager = CookieManager.getInstance()
+                                cookieManager.removeAllCookies(null)
+                                cookieManager.flush()
                                 refreshAccountEntry()
                             }
                         }

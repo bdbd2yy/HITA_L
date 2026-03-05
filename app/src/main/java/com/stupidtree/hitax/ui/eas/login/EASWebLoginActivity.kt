@@ -21,6 +21,8 @@ import java.util.Locale
 class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLoginBinding>() {
     private var completionRequested = false
     private var hasRetriedWithDirectCas = false
+    private var cookieProbeRetryCount = 0
+    private var cookieProbeRunnable: Runnable? = null
 
     override fun initViewBinding(): ActivityEasWebLoginBinding {
         return ActivityEasWebLoginBinding.inflate(layoutInflater)
@@ -124,6 +126,9 @@ class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLog
                     return
                 }
                 detectLoginCompleted(url)
+                if (!completionRequested) {
+                    probeLoginCompletionIfNeeded(url)
+                }
             }
 
             override fun onReceivedError(
@@ -178,8 +183,14 @@ class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLog
         val uri = runCatching { Uri.parse(url) }.getOrNull()
         val host = uri?.host?.lowercase(Locale.ROOT)
         val path = uri?.path ?: ""
-        val hitTarget = host == "jw.hitsz.edu.cn" &&
-            (path.startsWith("/casLogin") || path.startsWith("/cas"))
+        val hasTicket = !uri?.getQueryParameter("ticket").isNullOrBlank()
+        val hitTarget = host == "jw.hitsz.edu.cn" && (
+            path.startsWith("/casLogin") ||
+                path.startsWith("/cas") ||
+                path == "/" ||
+                path.startsWith("/index") ||
+                hasTicket
+            )
         Log.d(TAG, "detectLoginCompleted url=$url, hitTarget=$hitTarget")
         if (!hitTarget) return
 
@@ -189,13 +200,52 @@ class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLog
         val repo = EASRepository.getInstance(application)
         val oldToken = repo.getEasToken()
         val cookieMap = collectCookieMap()
-        if (cookieMap.isEmpty()) {
+        if (!isLikelyWebLoginSession(cookieMap)) {
             completionRequested = false
+            scheduleCookieProbe(url)
+            return
+        }
+        cookieProbeRetryCount = 0
+        viewModel.completeLoginByCookies(cookieMap, oldToken.username, oldToken.password)
+    }
+
+    private fun probeLoginCompletionIfNeeded(url: String) {
+        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return
+        val host = uri.host?.lowercase(Locale.ROOT) ?: return
+        if (host != "jw.hitsz.edu.cn") return
+        val cookieMap = collectCookieMap()
+        if (isLikelyWebLoginSession(cookieMap)) {
+            detectLoginCompleted(url)
+        }
+    }
+
+    private fun scheduleCookieProbe(lastUrl: String) {
+        if (cookieProbeRetryCount >= MAX_COOKIE_PROBE_RETRY) {
             binding.progressBar.visibility = View.GONE
             Toast.makeText(this, "未获取到登录Cookie，请继续完成认证", Toast.LENGTH_SHORT).show()
             return
         }
-        viewModel.completeLoginByCookies(cookieMap, oldToken.username, oldToken.password)
+        cookieProbeRetryCount++
+        cookieProbeRunnable?.let { binding.webview.removeCallbacks(it) }
+        val probeRunnable = Runnable {
+            if (completionRequested || isFinishing || isDestroyed) {
+                return@Runnable
+            }
+            val currentUrl = binding.webview.url ?: lastUrl
+            detectLoginCompleted(currentUrl)
+        }
+        cookieProbeRunnable = probeRunnable
+        binding.webview.postDelayed(probeRunnable, COOKIE_PROBE_DELAY_MS)
+    }
+
+    private fun isLikelyWebLoginSession(cookies: Map<String, String>): Boolean {
+        if (cookies.isEmpty()) return false
+        val keys = cookies.keys.map { it.lowercase(Locale.ROOT) }
+        val hasStrongSessionCookie = keys.any {
+            it == "castgc" || it == "tgc" || it == "route"
+        }
+        val hasJSession = keys.any { it == "jsessionid" }
+        return hasStrongSessionCookie || (hasJSession && cookies.size >= 2)
     }
 
     private fun collectCookieMap(): HashMap<String, String> {
@@ -204,6 +254,9 @@ class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLog
         parseCookieString(cookieManager.getCookie("http://jw.hitsz.edu.cn"), map)
         parseCookieString(cookieManager.getCookie("https://jw.hitsz.edu.cn"), map)
         parseCookieString(cookieManager.getCookie("https://ids.hit.edu.cn"), map)
+        parseCookieString(cookieManager.getCookie("https://sso.hitsz.edu.cn"), map)
+        parseCookieString(cookieManager.getCookie("https://sso.hitsz.edu.cn:7002"), map)
+        cookieManager.flush()
         return HashMap(map)
     }
 
@@ -227,6 +280,8 @@ class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLog
     }
 
     override fun onDestroy() {
+        cookieProbeRunnable?.let { binding.webview.removeCallbacks(it) }
+        cookieProbeRunnable = null
         binding.webview.stopLoading()
         binding.webview.webChromeClient = null
         binding.webview.destroy()
@@ -238,5 +293,7 @@ class EASWebLoginActivity : BaseActivity<WebLoginEASViewModel, ActivityEasWebLog
         private const val EAS_COMBINED_LOGIN_URL =
             "https://ids.hit.edu.cn/authserver/combinedLogin.do?type=IDSUnion&appId=ff2dfca3a2a2448e9026a8c6e38fa52b&success=http%3A%2F%2Fjw.hitsz.edu.cn%2FcasLogin"
         private const val EAS_DIRECT_CAS_LOGIN_URL = "https://jw.hitsz.edu.cn/casLogin"
+        private const val COOKIE_PROBE_DELAY_MS = 500L
+        private const val MAX_COOKIE_PROBE_RETRY = 6
     }
 }
